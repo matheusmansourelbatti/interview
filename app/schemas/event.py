@@ -5,15 +5,13 @@ from typing import Any
 class InvalidEvent(ValueError):
     pass
 
-class Event():
-
-    def __init__(self):
-        self.SUPPORTED_TYPES = {
-            "pr_opened",
-            "pr_merged",
-            "deployment",
-            "incident",
-        }
+class Event:
+    SUPPORTED_TYPES = {
+        "pr_opened",
+        "pr_merged",
+        "deployment",
+        "incident",
+    }
 
     def parse_timestamp(self, value: Any) -> datetime:
         if not isinstance(value, str):
@@ -33,17 +31,19 @@ class Event():
         if not isinstance(event, dict):
             raise InvalidEvent("each event must be an object")
 
-        event_type = event.get("type")
+        event_type = event.get("event_type")
         if event_type not in self.SUPPORTED_TYPES:
             raise InvalidEvent(f"unsupported event type: {event_type}")
 
         timestamp = self.parse_timestamp(event.get("timestamp"))
 
-        event_id = event.get("id")
+        event_id = event.get("event_id")
         requires_id = event_type in {"pr_opened", "pr_merged"}
 
         if requires_id and not isinstance(event_id, str):
-            raise InvalidEvent(f"{event_type} requires a string id")
+            raise InvalidEvent(f"{event_type} requires a string event_id")
 
         if event_id is not None and not isinstance(event_id, str):
-            raise InvalidEvent("id must be a string when provided")
+            raise InvalidEvent("event_id must be a string when provided")
+
+        return event_type, timestamp, event_id

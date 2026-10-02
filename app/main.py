@@ -1,19 +1,18 @@
-from datetime import datetime, timezone
+from datetime import datetime
 import json
 from typing import Any
 
-from schemas import Event, LLMClient
+from schemas import Event, InvalidLLMResponse, LLMClient
 
 
-def calculate_metrics(events: list[dict[str, Any]]) -> dict[str, int | float]:
+def calculate_metrics(events: list[dict[str, Any]]) -> dict[str, int | float | None]:
     opened: dict[str, datetime] = {}
     merged: dict[str, datetime] = {}
     deployments = 0
     incidents = 0
 
-    
+    ev = Event()
     for event in events:
-        ev = Event ()
         event_type, timestamp, event_id = ev.validate(event)
 
         if event_type == "pr_opened":
@@ -129,32 +128,34 @@ def generate_team_insight(
     }
 
 
-client = LLMClient(
-    '{"summary": "Healthy delivery flow.", '
-    '"recommendations": ["Monitor cycle time."]}'
-)
+if __name__ == "__main__":
+    client = LLMClient(
+        '{"summary": "Healthy delivery flow.", '
+        '"recommendations": ["Monitor cycle time."]}'
+    )
 
-result = generate_team_insight(
-    "platform",
-    [
-        {
-            "event_type": "pr_opened",
-            "event_id": "pr-1",
-            "timestamp": "2026-01-01T09:00:00Z",
-        },
-        {
-            "event_type": "pr_merged",
-            "event_id": "pr-1",
-            "timestamp": "2026-01-02T09:00:00Z",
-        },
-        {
-            "event_type": "deployment",
-            "timestamp": "2026-01-03T12:00:00Z",
-        },
-        {
-            "event_type": "incident",
-            "timestamp": "2026-01-04T12:00:00Z",
-        },
-    ],
-    client,
-)
+    result = generate_team_insight(
+        "platform",
+        [
+            {
+                "event_type": "pr_opened",
+                "event_id": "pr-1",
+                "timestamp": "2026-01-01T09:00:00Z",
+            },
+            {
+                "event_type": "pr_merged",
+                "event_id": "pr-1",
+                "timestamp": "2026-01-02T09:00:00Z",
+            },
+            {
+                "event_type": "deployment",
+                "timestamp": "2026-01-03T12:00:00Z",
+            },
+            {
+                "event_type": "incident",
+                "timestamp": "2026-01-04T12:00:00Z",
+            },
+        ],
+        client,
+    )
+    print(json.dumps(result, indent=2))

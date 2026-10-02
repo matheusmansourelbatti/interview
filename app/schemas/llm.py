@@ -1,3 +1,7 @@
+class InvalidLLMResponse(ValueError):
+    pass
+
+
 class LLMClient:
     def __init__(self, response: str):
         self.response = response
